@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歲月長河中的青春印記｜新北市三重區三和國中</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           CSS 變數與基礎設定
+           ========================================= */
+        :root {
+            --bg-color: #0c0c0c;
+            --text-main: #eaeaea;
+            --text-muted: #888888;
+            --accent-gold: #cfa864;
+            --font-heading: 'Noto Serif TC', serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+            --letterbox-height: 8vh;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* =========================================
+           電影視覺效果：膠卷雜訊與上下黑邊
+           ========================================= */
+        /* 膠卷雜訊 (Film Grain) */
+        .film-grain {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0.15;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* 電影黑邊 (Letterbox) */
+        .letterbox-top, .letterbox-bottom {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: var(--letterbox-height);
+            background-color: #000;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .letterbox-top { top: 0; }
+        .letterbox-bottom { bottom: 0; }
+
+        /* =========================================
+           排版與區塊設計
+           ========================================= */
+        /* 首頁全幅區塊 */
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: -10%; left: -10%; right: -10%; bottom: -10%;
+            background-image: url('https://raw.githubusercontent.com/qhy1105-dev/ray/main/photo1.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.4) contrast(1.1) grayscale(0.2);
+            z-index: 1;
+            /* 將由 JS 控制視差 */
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            letter-spacing: 8px;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            color: #ccc;
+        }
+
+        /* 敘事章節共通設定 */
+        .story-section {
+            padding: 15vh 10vw;
+            position: relative;
+            z-index: 10;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .split-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5vw;
+        }
+
+        .split-layout.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .text-content {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent-gold);
+            margin-top: 15px;
+        }
+
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            text-align: justify;
+        }
+
+        /* =========================================
+           實體畫框/拍立得樣式
+           ========================================= */
+        .image-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        .polaroid {
+            background-color: #f9f9f9;
+            padding: 15px 15px 60px 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 5px rgba(0,0,0,0.1);
+            border-radius: 2px;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            max-width: 90%;
+        }
+
+        /* 預設些微旋轉 */
+        .split-layout .polaroid { transform: rotate(-3deg) translateZ(0); }
+        .split-layout.reverse .polaroid { transform: rotate(3deg) translateZ(0); }
+
+        /* 滑鼠懸停時回正並放大 */
+        .polaroid:hover {
+            transform: rotate(0deg) scale(1.02) translateZ(20px) !important;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.9);
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: sepia(0.2) contrast(1.1); /* 賦予復古色調 */
+            border: 1px solid #ddd;
+        }
+
+        /* =========================================
+           動畫：Scroll Reveal (由下往上淡入)
+           ========================================= */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                        transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 延遲效果 */
+        .delay-1 { transition-delay: 0.2s; }
+        .delay-2 { transition-delay: 0.4s; }
+
+        /* =========================================
+           頁尾
+           ========================================= */
+        footer {
+            padding: 10vh 20px var(--letterbox-height) 20px;
+            text-align: center;
+            font-family: var(--font-body);
+            color: #555;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        /* =========================================
+           RWD 響應式設計 (手機版)
+           ========================================= */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .hero-subtitle { font-size: 0.9rem; }
+            
+            .split-layout, .split-layout.reverse {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .polaroid, .split-layout .polaroid, .split-layout.reverse .polaroid {
+                /* 手機版取消旋轉以利閱讀 */
+                transform: none; 
+                padding: 10px 10px 40px 10px;
+            }
+
+            .story-section {
+                padding: 10vh 5vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="film-grain"></div>
+    <div class="letterbox-top"></div>
+    <div class="letterbox-bottom"></div>
+
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title reveal active">三和國中</h1>
+            <p class="hero-subtitle reveal delay-1 active">歲月長河中的青春印記</p>
+        </div>
+    </header>
+
+    <section class="story-section">
+        <div class="split-layout">
+            <div class="text-content reveal">
+                <h2 class="section-title">晨光序曲</h2>
+                <p class="section-desc">
+                    踏入三重區的這片校園，彷彿走進了一條時光隧道。晨曦穿透樹梢，灑落在斑駁的磚牆上，那是每一代三和人共有的視覺記憶。鐘聲響起之前，青春的步伐在這裡交織，開啟了無數個關於成長的篇章。
+                </p>
+            </div>
+            <div class="image-content reveal delay-1">
+                <div class="polaroid">
+                    <img src="https://raw.githubusercontent.com/qhy1105-dev/ray/main/photo2.jpg" alt="三和國中校園一隅">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="story-section">
+        <div class="split-layout reverse">
+            <div class="text-content reveal">
+                <h2 class="section-title">朗朗迴聲</h2>
+                <p class="section-desc">
+                    長長的走廊裡，回蕩著不曾停歇的琅琅書聲與粉筆敲擊黑板的清脆聲響。教室不僅是知識傳遞的容器，更是思想碰撞的劇場。那些在課桌上刻下的夢想，與黑板上來不及擦去的數學公式，共同拼湊出年少時最純粹的執著。
+                </p>
+            </div>
+            <div class="image-content reveal delay-1">
+                <div class="polaroid">
+                    <img src="https://raw.githubusercontent.com/qhy1105-dev/ray/main/photo3.jpg" alt="課堂與長廊">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="story-section">
+        <div class="split-layout">
+            <div class="text-content reveal">
+                <h2 class="section-title">汗水與金黃</h2>
+                <p class="section-desc">
+                    操場上的紅土與跑道，見證了無數次竭盡全力的衝刺。那是充滿汗水與陽光的日子，每一次跌倒後的站起，每一次團隊間的默契呼喊，都在夕陽的金黃餘暉中，被定格成一幅幅充滿生命張力的電影畫面。無畏，是這裡賦予的最美勳章。
+                </p>
+            </div>
+            <div class="image-content reveal delay-1">
+                <div class="polaroid">
+                    <img src="https://raw.githubusercontent.com/qhy1105-dev/ray/main/photo4.jpg" alt="操場與汗水">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="story-section">
+        <div class="split-layout reverse">
+            <div class="text-content reveal">
+                <h2 class="section-title">雋永底蘊</h2>
+                <p class="section-desc">
+                    當驪歌響起，那些曾經以為漫長的日子，瞬間壓縮成一幀幀珍貴的底片。三和國中，不僅是一個地理名詞，更是心底深處永不褪色的精神原鄉。時光會帶走稚嫩的臉龐，卻將厚重的底蘊與回憶，永遠地刻畫在每一個三和人的靈魂裡。
+                </p>
+            </div>
+            <div class="image-content reveal delay-1">
+                <div class="polaroid">
+                    <img src="https://raw.githubusercontent.com/qhy1105-dev/ray/main/photo5.jpg" alt="畢業與回憶">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>【翊華程式設計 | 網頁與作品及製作】</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            /* 1. 視差滾動效果 (Parallax) */
+            const heroBg = document.querySelector('.hero-bg');
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                // 利用 transform 實現輕微的視差位移
+                if (heroBg) {
+                    heroBg.style.transform = `translateY(${scrolled * 0.4}px)`;
+                }
+            });
+
+            /* 2. 滾動揭示動畫 (Intersection Observer) */
+            // 設定 Observer 選項
+            const revealOptions = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.2 // 當元素有 20% 進入畫面時觸發
+            };
+
+            const revealCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // 加上 active class 以觸發 CSS 動畫
+                        entry.target.classList.add('active');
+                        // 觸發後即取消觀察，確保動畫只執行一次（更符合電影播放感）
+                        observer.unobserve(entry.target);
+                    }
+                });
+            };
+
+            const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
+
+            // 取得所有帶有 .reveal class 的元素並開始觀察
+            const reveals = document.querySelectorAll('.reveal');
+            reveals.forEach(reveal => {
+                // 首頁標題一開始就顯示，不需要再次 trigger
+                if (!reveal.classList.contains('hero-title') && !reveal.classList.contains('hero-subtitle')) {
+                    revealObserver.observe(reveal);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
